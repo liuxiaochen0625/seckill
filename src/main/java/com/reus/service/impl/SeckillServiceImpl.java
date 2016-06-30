@@ -2,6 +2,7 @@ package com.reus.service.impl;
 
 import com.reus.dao.SeckillDao;
 import com.reus.dao.SucessKilledDao;
+import com.reus.dao.cache.RedisDao;
 import com.reus.dto.Exposer;
 import com.reus.dto.SeckillExecution;
 import com.reus.entity.Seckill;
@@ -33,6 +34,9 @@ public class SeckillServiceImpl implements SeckillService{
 
     @Autowired
     private SucessKilledDao sucessKilledDao;
+
+    @Autowired
+    private RedisDao redisDao;
     private final String slat = "wqwefe223290<>,../[]'';;[";
     public List<Seckill> getSeckillList() {
         return seckillDao.queryAll(0,10);
@@ -44,7 +48,19 @@ public class SeckillServiceImpl implements SeckillService{
 
 
     public Exposer exportSeckillUrl(long seckillId) {
-        Seckill seckill = seckillDao.queryById(seckillId);
+        //访问redis
+        Seckill seckill = redisDao.getSeckill(seckillId);
+        if(seckill == null){
+            //访问数据库
+            seckill = seckillDao.queryById(seckillId);
+            if(seckill == null){
+                return new Exposer(false,seckillId);
+            }else {
+                //放入redis中
+                redisDao.putSeckill(seckill);
+            }
+
+        }
         if(seckill == null){
             return new Exposer(false,seckillId);
         }
