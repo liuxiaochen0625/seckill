@@ -28,7 +28,7 @@ CREATE PROCEDURE `scukill`.`execute_seckill`
             AND start_time < v_kill_time
             AND number > 0;
       SELECT ROW_COUNT() INTO insert_count;
-      IF (inset_count = 0) THEN
+      IF (insert_count = 0) THEN
         ROLLBACK;
         SET r_result = 0;
       elseif(insert_count < 0) THEN
@@ -51,3 +51,8 @@ CALL execute_seckill(1003,15868180410,now(),@r_result);
 
 -- 获取结果
 SELECT @r_result;
+
+-- 存储过程
+-- 1：存储过程优化：事务行集锁持有时间
+-- 2：不要过度依赖存储过程
+-- 3：简单逻辑可以应用存储过程
